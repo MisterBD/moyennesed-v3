@@ -27,7 +27,7 @@ export class UserData {
   static tempUsername;
   static tempPassword;
   static isWaitingForConfirmation = false;
-  static async login(username, password, validate=true, validateIndex=0) {
+  static async login(username, password, validate=true, validateIndex=0, openDoubleAuthPopup) {
     this.usedURL = this.API_URL;
     if (username.substring(0, 11) == "demoaccount") {
       this.usedURL = this.CUSTOM_API_URL;
@@ -42,9 +42,19 @@ export class UserData {
     this.tempUsername = username;
     this.tempPassword = password;
 
+    // Get login id
+    var cn = ""; var cv = "";
+    const loginIDs = JSON.parse(await AsyncStorage.getItem("loginIDs"));
+    if (loginIDs) {
+      cn = loginIDs.cn;
+      cv = loginIDs.cv;
+    }
+
     const credentials = {
       "identifiant": username,
       "motdepasse": encodeURIComponent(password),
+      "cn": cn,
+      "cv": cv,
     };
 
     var response = await axios.post(
@@ -69,6 +79,16 @@ export class UserData {
             if (validate || response.data.data.accounts.length == 1) { await this.validateWantedAccountID(validateIndex ? validateIndex : 0); }
             else { this.isWaitingForConfirmation = true; }
             success = 1;
+            break;
+          case 250:
+            Logger.login("Account needs confirmation...");
+            this.token = response.data.token;
+            success = 2;
+            await AsyncStorage.setItem("credentials", JSON.stringify({
+              "username": username,
+              "password": password,
+            }));
+            openDoubleAuthPopup();
             break;
           case 505: // Wrong password
             Logger.login(`Couldn't connect, wrong password for ${username}`);
@@ -122,16 +142,16 @@ export class UserData {
     }
   }
 
-  static async refreshLogin() {
+  static async refreshLogin(openDoubleAuthPopup) {
     Logger.info("Refreshing login...");
     const credentials = JSON.parse(await AsyncStorage.getItem("credentials"));
     if (credentials) {
-      return await this.login(credentials.username, credentials.password, true, credentials.index);
+      return await this.login(credentials.username, credentials.password, true, credentials.index, openDoubleAuthPopup);
     }
     return -1;
   }
 
-  static async getMarks(accountID) {
+  static async getMarks(accountID, openDoubleAuthPopup) {
     this.unavailableServers = false;
 
     Logger.marks(`Getting marks for account ${accountID}...`);
@@ -155,7 +175,7 @@ export class UserData {
             return response.data.data;
           case 520: // Outdated token
             Logger.info("Outdated token, reconnecting...");
-            const reloginSuccessful = await this.refreshLogin();
+            const reloginSuccessful = await this.refreshLogin(openDoubleAuthPopup);
             if (reloginSuccessful) {
               return await this.getMarks(accountID);
             }
@@ -258,18 +278,15 @@ export class UserData {
     this.childrenAccounts.clear();
     this.token = "";
     this.currentYearPeriod = "";
-    await AsyncStorage.removeItem("credentials");
     this.gotMarksFor.clear();
     this.marksNeedUpdate.clear();
     this.marksDataCache.clear();
-    await AsyncStorage.removeItem("cache");
     await Preferences.erase();
     await CoefficientManager.erase();
     this.temporaryProfilePhoto = "";
-    await AsyncStorage.removeItem("photo");
-    await AsyncStorage.removeItem("canShowAverage");
     this.lastBugReport = null;
     resetSubjectColors();
+    await AsyncStorage.clear();
     Logger.info("Logged out !");
   }
 

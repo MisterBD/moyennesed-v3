@@ -12,7 +12,7 @@ import { useAppContext } from '../../../utils/AppContext';
 import { UserData } from '../../../core/UserData';
 
 
-function AuthStack({ theme }) {
+function AuthStack({ openDoubleAuthPopup, theme }) {
   // Is logged in ?
   const [loggedIn, setLoggedIn] = useState(false);
   const [isConnecting, setIsConnecting, isConnectingRef] = useState(false);
@@ -82,6 +82,7 @@ function AuthStack({ theme }) {
           isConnecting={isConnecting}
           setIsConnecting={setIsConnecting}
           setLoggedIn={setLoggedIn}
+          openDoubleAuthPopup={openDoubleAuthPopup}
           pageStyle={styles.pageView}
           windowDimensions={windowDimensions}
           theme={theme}

@@ -1,3 +1,6 @@
+var Buffer = require('buffer/').Buffer;
+import { htmlToText } from "html-to-text";
+
 // Core
 function _sortMarks(marks, rev=true) {
     marks.sort((a, b) => {
@@ -74,4 +77,12 @@ function capitalizeWords(string) {
     return words.join(" ");
 }
 
-export { formatMark, formatAverage, formatCoefficient, formatDate, formatDate2, capitalizeWords, _sortMarks };
+function parseHtmlData(data) {
+    if (!data) { return ""; }
+    let binaryData = Buffer.from(data, 'base64').toString('binary');
+    let utf8Data = decodeURIComponent(escape(binaryData));
+    return htmlToText(utf8Data);
+  }
+
+
+export { formatMark, formatAverage, formatCoefficient, formatDate, formatDate2, capitalizeWords, _sortMarks, parseHtmlData };

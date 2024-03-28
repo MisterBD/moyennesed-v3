@@ -6,7 +6,7 @@ import { HapticsHandler } from '../../../utils/HapticsHandler';
 import * as Haptics from 'expo-haptics';
 
 
-function CustomButton({ title, confirmTitle, confirmLabel, onPress, theme, leftIcon, rightIcon, loadIcon, willLoad, overrideIsLoading, style, textStyle }) {
+function CustomButton({ title, confirmTitle, confirmLabel, onPress, theme, leftIcon, rightIcon, loadIcon, willLoad=false, overrideIsLoading=false, style, textStyle }) {
   const [isLoading, setIsLoading] = useState(overrideIsLoading);
   const [waitingForConfirmation, setWaitingForConfirmation] = useState(false);
   

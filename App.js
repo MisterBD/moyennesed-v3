@@ -9,6 +9,8 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 import { AuthStack } from "./ui/views/authstack/AuthStack";
 import { AppStack } from "./ui/views/appstack/AppStack";
+import { BottomSheet } from "./ui/views/global_components/BottomSheet";
+import DoubleAuthPopup from "./ui/views/authstack/components/DoubleAuthPopup";
 import { useFonts, refreshTheme } from "./ui/hooks/useStyles";
 import { UserData } from "./core/UserData";
 import { Preferences } from "./core/Preferences";
@@ -70,6 +72,24 @@ function App() {
     }
   }
 
+  // Double auth popup
+  const [isDoubleAuthPopupOpen, setIsDoubleAuthPopupOpen] = useState(false);
+  function renderDoubleAuthPopup() {
+    if (!isDoubleAuthPopupOpen) { return null; }
+    return <BottomSheet
+      key={'double-auth'}
+      isOpen={isDoubleAuthPopupOpen}
+      onClose={() => setIsDoubleAuthPopupOpen(false)}
+      snapPoints={["100%"]}
+      enablePanDownToClose={false}
+      children={<DoubleAuthPopup closePopup={() => {
+        setLoggedIn(true);
+        setIsDoubleAuthPopupOpen(false);
+      }} />}
+      theme={theme}
+    />;
+  }
+
   // Don't load UI until app is loaded
   if (!isAppLoaded) { return null; }
 
@@ -86,8 +106,11 @@ function App() {
         <AppContextProvider state={{ loggedIn, setLoggedIn }}>
           {/* AuthStack / AppStack */}
           {loggedIn
-            ? <AppStack setIsDarkMode={setIsDarkMode} theme={theme}/>
-            : <AuthStack theme={theme}/>}
+            ? <AppStack setIsDarkMode={setIsDarkMode} isDoubleAuthPopupOpen={isDoubleAuthPopupOpen} openDoubleAuthPopup={() => setIsDoubleAuthPopupOpen(true)} theme={theme}/>
+            : <AuthStack openDoubleAuthPopup={() => setIsDoubleAuthPopupOpen(true)} theme={theme}/>}
+          
+          {/* Double auth popup */}
+          {renderDoubleAuthPopup()}
         </AppContextProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>

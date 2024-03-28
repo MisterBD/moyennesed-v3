@@ -12,25 +12,25 @@ import AdsHandler from '../../../utils/AdsHandler';
 import { Logger } from '../../../utils/Logger';
 
 
-function AppStack({ setIsDarkMode, theme }) {
+function AppStack({ setIsDarkMode, isDoubleAuthPopupOpen, openDoubleAuthPopup, theme }) {
   // Main connection states
   const [_connected, setConnected, connectedRef] = useState(UserData.connected);
   useEffect(() => { if (connectedRef.current && !UserData.connected) { setConnected(UserData.connected); } }, [UserData.connected]);
   const [_connecting, setConnecting, connectingRef] = useState(UserData.connecting);
-  const [_triedToConnect, setTriedToConnect, triedToConnectRef] = useState(false);
 
   // Auto-connect (only first launch)
-  if (!(connectedRef.current || connectingRef.current) && !triedToConnectRef.current) {
-    setTriedToConnect(true);
+  useEffect(() => {
+    if (connectedRef.current || connectingRef.current) { return; }
+
     Logger.info("Auto-connecting...");
     refreshLogin();
-  }
+  }, [isDoubleAuthPopupOpen]);
 
   // Refresh login
   async function refreshLogin() {
     setConnecting(true);
     setConnected(false);
-    const successful = await UserData.refreshLogin();
+    const successful = await UserData.refreshLogin(openDoubleAuthPopup);
     setConnected(successful == 1);
     setConnecting(false);
   }

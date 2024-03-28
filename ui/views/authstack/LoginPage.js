@@ -9,7 +9,7 @@ import { UnavailableServers } from '../global_components/UnavailableServers';
 import { UserData } from '../../../core/UserData';
 
 
-function LoginPage({ isConnecting, setIsConnecting, setLoggedIn, pageStyle, windowDimensions, theme }) {
+function LoginPage({ isConnecting, setIsConnecting, setLoggedIn, openDoubleAuthPopup, pageStyle, windowDimensions, theme }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [connectionFailed, setConnectionFailed] = useState(false);
@@ -19,7 +19,7 @@ function LoginPage({ isConnecting, setIsConnecting, setLoggedIn, pageStyle, wind
     async function handleLogin() {
       setConnectionFailed(false);
       setUnavailableServers(false);
-      const successful = await UserData.login(username, password, false);
+      const successful = await UserData.login(username, password, false, undefined, openDoubleAuthPopup);
       setConnectionFailed(successful != 1);
       setUnavailableServers(successful == -1);
       setIsConnecting(false);

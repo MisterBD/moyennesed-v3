@@ -16,6 +16,7 @@ import { Preferences } from '../../../core/Preferences';
 import { CoefficientManager } from '../../../core/CoefficientsManager';
 import { HapticsHandler } from '../../../utils/HapticsHandler';
 import AdsHandler from '../../../utils/AdsHandler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 function ProfilePage({
@@ -405,6 +406,14 @@ function ProfilePage({
                 title={"Open ad inspector"}
                 onPress={() => {
                   AdsHandler.openDebugger();
+                }}
+                windowDimensions={windowDimensions}
+                theme={theme}
+              />
+              <CustomLink
+                title={"Clear login ids"}
+                onPress={() => {
+                  AsyncStorage.removeItem("loginIDs");
                 }}
                 windowDimensions={windowDimensions}
                 theme={theme}
