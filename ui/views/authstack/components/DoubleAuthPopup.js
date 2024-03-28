@@ -1,9 +1,10 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, Text, View } from "react-native";
 import { DefaultTheme } from "react-native-paper";
 import { CheckCircleIcon, CircleIcon } from "lucide-react-native";
 import { PressableScale } from "react-native-pressable-scale";
+import { ScrollView } from "react-native-gesture-handler";
 
 import { CustomButton } from "../../global_components/CustomButton";
 import { UserData } from "../../../../core/UserData";
@@ -101,7 +102,7 @@ function DoubleAuthPopup({ closePopup }) {
   
   return (
     <View>
-      <ScrollView style={{ height: '100%' }}>
+      <ScrollView style={{ height: Dimensions.get('window').height  }}>
         <Text style={[DefaultTheme.fonts.titleSmall, {
           marginBottom: 30,
           marginTop: 60,
