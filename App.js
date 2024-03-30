@@ -40,6 +40,9 @@ function App() {
   useEffect(() => { initialize(); }, []);
   async function initialize() {
     try {
+      // Setup admob
+      await AdsHandler.setupAdmob({ checkForConsent: true });
+
       // Load fonts
       await useFonts();
 
@@ -54,14 +57,8 @@ function App() {
         await UserData.loadCache();
         setLoggedIn(true);
 
-        // Setup admob
-        await AdsHandler.setupAdmob({ checkForConsent: true });
-
         setIsAppLoaded(true);
       } else {
-        // Setup admob
-        await AdsHandler.setupAdmob({ checkForConsent: false });
-
         Logger.load("No account detected, showing AuthStack");
         setIsAppLoaded(true);
       }
