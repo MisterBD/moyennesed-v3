@@ -35,11 +35,11 @@ yarn-error.*
 *.tsbuildinfo
 
 # firebase
-# utils/firebaseUtils.js
+utils/firebaseUtils.js
 private
 
 # admob
-# .env
+.env
 
 # builds
 builds/
