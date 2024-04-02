@@ -144,18 +144,19 @@ function DoubleAuthPopup({ closePopup }) {
           <ActivityIndicator size={25} color={DefaultTheme.colors.onSurfaceDisabled}/>
         )}
       </ScrollView>
-      <CustomButton
-        title={"Confirmer"}
-        onPress={confirmChoice}
-        willLoad={true}
-        loadIcon={<ActivityIndicator size={25} color={DefaultTheme.colors.onPrimary}/>}
-        theme={DefaultTheme}
-        style={{
-          position: 'absolute',
-          bottom: 50,
-          width: '100%',
-        }}
-      />
+      <View style={{
+        position: 'absolute',
+        bottom: 70,
+        width: '100%',
+      }}>
+        <CustomButton
+          title={"Confirmer"}
+          onPress={() => confirmChoice()}
+          willLoad={true}
+          loadIcon={<ActivityIndicator size={25} color={DefaultTheme.colors.onPrimary}/>}
+          theme={DefaultTheme}
+        />
+      </View>
     </View>
   );
 }
