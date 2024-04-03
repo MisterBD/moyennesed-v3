@@ -39,10 +39,13 @@ function App() {
   // Main initialize function
   useEffect(() => { initialize(); }, []);
   async function initialize() {
-    try {
-      // Setup admob
+    try { // Setup admob
       await AdsHandler.setupAdmob({ checkForConsent: true });
-
+    } catch (e) {
+      Logger.load("Could not start Admob, app is probably offline", true);
+      Logger.load(e, true);
+    }
+    try {
       // Load fonts
       await useFonts();
 

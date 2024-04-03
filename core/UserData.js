@@ -51,10 +51,14 @@ export class UserData {
     }
 
     const credentials = {
-      "identifiant": username,
+      "identifiant": encodeURIComponent(username),
       "motdepasse": encodeURIComponent(password),
-      "cn": cn,
-      "cv": cv,
+      "fa": [
+        {
+          "cn": cn,
+          "cv": cv,
+        }
+      ]
     };
 
     var response = await axios.post(
