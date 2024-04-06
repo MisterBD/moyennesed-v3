@@ -82,7 +82,20 @@ function parseHtmlData(data) {
     let binaryData = Buffer.from(data, 'base64').toString('binary');
     let utf8Data = decodeURIComponent(escape(binaryData));
     return htmlToText(utf8Data);
+}
+
+function encodeStringValueToUTF8(str) {
+    return (
+      encodeURIComponent(str)
+        .replace(
+          /['()*]/g,
+          (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+        )
+        .replace(/%(7C|60|5E)/g, (str, hex) =>
+          String.fromCharCode(parseInt(hex, 16)),
+        )
+    );
   }
 
 
-export { formatMark, formatAverage, formatCoefficient, formatDate, formatDate2, capitalizeWords, _sortMarks, parseHtmlData };
+export { formatMark, formatAverage, formatCoefficient, formatDate, formatDate2, capitalizeWords, _sortMarks, parseHtmlData, encodeStringValueToUTF8 };

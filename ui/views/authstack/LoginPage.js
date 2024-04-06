@@ -2,8 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { View, Text, Linking, Alert } from "react-native";
 import { UserIcon, KeyRoundIcon } from 'lucide-react-native';
 
-import { CustomInput } from './components/CustomInput';
 import { InfoCard } from './components/InfoCard';
+import CustomTextInput from './components/CustomTextInput';
 import { Separator } from '../global_components/Separator';
 import { UnavailableServers } from '../global_components/UnavailableServers';
 import { UserData } from '../../../core/UserData';
@@ -53,19 +53,17 @@ function LoginPage({ isConnecting, setIsConnecting, setLoggedIn, openDoubleAuthP
       ]}>MoyennesED fonctionne avec vos identifiants ÉcoleDirecte</Text>
       
       {/* Login input */}
-      <CustomInput
-        label="Identifiant"
+      <CustomTextInput
+        label={"Identifiant"}
         icon={<UserIcon size={30} color={theme.colors.onSurfaceDisabled}/>}
         onChangeText={(text) => setUsername(text)}
-        secureTextEntry={false}
-        theme={theme}
         style={{ marginBottom: 10 }}
       />
-      <CustomInput
+      <CustomTextInput
         label="Mot de passe"
         icon={<KeyRoundIcon size={30} color={theme.colors.onSurfaceDisabled}/>}
         onChangeText={(text) => setPassword(text)}
-        secureTextEntry={true}
+        secureTextEntry
         theme={theme}
         style={{
           borderColor: connectionFailed ? theme.colors.tertiary : theme.colors.surface,

@@ -6,6 +6,7 @@ import { Preferences } from "./Preferences";
 import { CoefficientManager } from "./CoefficientsManager";
 import { calculateAllPeriodAverages } from "./Period";
 import { resetSubjectColors } from "../utils/Colors";
+import { encodeStringValueToUTF8 } from "../utils/Utils";
 import { Logger } from "../utils/Logger";
 
 
@@ -51,8 +52,8 @@ export class UserData {
     }
 
     const credentials = {
-      "identifiant": encodeURIComponent(username),
-      "motdepasse": encodeURIComponent(password),
+      "identifiant": encodeStringValueToUTF8(username),
+      "motdepasse": encodeStringValueToUTF8(password),
       "fa": [
         {
           "cn": cn,
@@ -60,6 +61,8 @@ export class UserData {
         }
       ]
     };
+    console.log(password);
+    console.log(credentials);
 
     var response = await axios.post(
       `${this.usedURL}/v3/login.awp?v=4`,
