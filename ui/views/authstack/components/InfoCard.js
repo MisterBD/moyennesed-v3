@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 import { ChevronRightIcon } from 'lucide-react-native';
-import { PressableScale } from 'react-native-pressable-scale';
+import { PressableScale } from '../../global_components/PressableScale';
 
 
 function InfoCard({

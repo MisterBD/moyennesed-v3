@@ -1,8 +1,8 @@
 import { useRef, useEffect, useState } from "react";
 import { View, Text, Dimensions, Platform } from "react-native";
 import { CheckCircle2Icon, CircleIcon } from "lucide-react-native";
-import { PressableScale } from "react-native-pressable-scale";
-import LottieView from "lottie-react-native";
+import { PressableScale } from '../global_components/PressableScale';
+import LottieView from "../global_components/LottieAnimation";
 import * as Haptics from "expo-haptics";
 
 import { UserData } from "../../../core/UserData";

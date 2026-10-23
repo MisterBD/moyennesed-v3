@@ -1,107 +1,66 @@
-import { useEffect, useState } from 'react';
-import { View, Text, Platform, Dimensions } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Platform, Dimensions, Share } from 'react-native';
 import { CheckCircle2Icon, CircleIcon } from 'lucide-react-native';
-import { PressableScale } from 'react-native-pressable-scale';
+import { PressableScale } from '../../global_components/PressableScale';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { CustomButton } from '../../global_components/CustomButton';
 import { UserData } from '../../../../core/UserData';
-import { firebase } from '../../../../utils/firebaseUtils';
+import { buildDiagnosticReport } from '../../../../utils/Diagnostic';
 import { Logger } from '../../../../utils/Logger';
 import { HapticsHandler } from '../../../../utils/HapticsHandler';
 
 
+// Rapport de diagnostic : rien n'est envoyé automatiquement. Le rapport (anonymisé) est
+// proposé au partage ou copié, pour le relire soi-même ou le donner à Claude.
 function BugReportPopup({ windowDimensions, theme }) {
   const [selectedPossibleBug, setSelectedPossibleBug] = useState(0);
   const possibleBugs = [
     {
       'title': 'Problème de connexion',
       'subtitle': "L'application ne se connecte plus à mon compte",
-      'firebaseCode': 'Connection',
+      'code': 'Connection',
     },
     {
       'title': 'Notes non récupérées',
       'subtitle': "Mon compte se connecte mais mes notes n'apparaissent pas",
-      'firebaseCode': 'Marks',
+      'code': 'Marks',
     },
     {
       'title': 'Fausses moyennes / faux coefs',
       'subtitle': "Les 'devine coefficients' ne sont pas au top",
-      'firebaseCode': 'Coefficients & Averages',
+      'code': 'Coefficients & Averages',
     },
     {
       'title': 'Problème graphique',
       'subtitle': "J'ai des problèmes d'affichages sur mon écran",
-      'firebaseCode': 'Graphics',
+      'code': 'Graphics',
     },
     {
       'title': 'Autre',
-      'subtitle': `Problème plus dûr à expliquer`,
-      'firebaseCode': 'Other',
+      'subtitle': `Problème plus dur à expliquer`,
+      'code': 'Other',
     }
   ];
 
-  const [canSendBugReport, setCanSendBugReport] = useState(true);
-  const [sendingBugReport, setSendingBugReport] = useState(false);
-  const [sentBugReport, setSentBugReport] = useState(false);
-  useEffect(() => {
-    if (Date.now() - (UserData.lastBugReport ?? 0) > UserData.bugReportCooldown) {
-      setCanSendBugReport(true);
-    } else {
-      setCanSendBugReport(false);
-    }
-  }, []);
+  const [status, setStatus] = useState("idle"); // idle | done | error
 
-  function anonymiseLoginLogs(loginLogs) {
-    loginLogs.data.accounts[0].identifiant = "jacksparrow";
-    loginLogs.data.accounts[0].prenom = "Jack";
-    loginLogs.data.accounts[0].particule = "";
-    loginLogs.data.accounts[0].nom = "Sparrow";
-    loginLogs.data.accounts[0].email = "jack.sparrow@gmail.com";
-    loginLogs.data.accounts[0].modules = [];
-    loginLogs.data.accounts[0].parametresIndividuels = {};
-    if (!UserData.mainAccount.isParent) {
-      loginLogs.data.accounts[0].profile.sexe = "M";
-      loginLogs.data.accounts[0].profile.telPortable = "---";
-      loginLogs.data.accounts[0].profile.photo = ""
-    } else {
-      loginLogs.data.accounts[0].profile.email = "jack.sparrow@gmail.com";
-      loginLogs.data.accounts[0].profile.telPortable = "";
-      loginLogs.data.accounts[0].profile.telPortableConjoint = "";
-      loginLogs.data.accounts[0].profile.eleves.forEach(eleve => {
-        eleve.prenom = "Jack";
-        eleve.nom = "Sparrow";
-        eleve.sexe = "M";
-        eleve.photo = "";
-        eleve.modules = [];
-      });
-    }
-    
-    return loginLogs;
-  }
-
-  async function sendBugReport() {
-    if (Date.now() - (UserData.lastBugReport ?? 0) > UserData.bugReportCooldown) {
-      Logger.info("Sending bug report...");
-      setSendingBugReport(true);
-      const dataToSend = {
-        'date': new Date().toISOString(),
-        "platform": Platform.OS,
-        'bugType': possibleBugs[selectedPossibleBug].firebaseCode,
-        'loginLogs': anonymiseLoginLogs(UserData.loginLogs),
-        'marksLogs': UserData.marksLogs,
-      };
-      // Get username for firestore document ID
-      const username = JSON.parse(await AsyncStorage.getItem('credentials')).username;
-      await firebase.firestore().collection(possibleBugs[selectedPossibleBug].firebaseCode).doc(username).set(dataToSend);
-      UserData.lastBugReport = Date.now();
-      setSentBugReport(true);
-      setSendingBugReport(false);
-      setCanSendBugReport(false);
-      Logger.info("Sent bug report !");
-    } else {
-      setCanSendBugReport(false);
+  async function shareBugReport() {
+    const report = buildDiagnosticReport({
+      category: possibleBugs[selectedPossibleBug].code,
+      loginLogs: UserData.loginLogs,
+      marksLogs: UserData.marksLogs,
+    });
+    try {
+      if (Platform.OS === "web" && typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(report);
+      } else {
+        await Share.share({ message: report });
+      }
+      Logger.info("Rapport de diagnostic préparé");
+      setStatus("done");
+    } catch (e) {
+      setStatus("error");
     }
   }
   
@@ -136,14 +95,15 @@ function BugReportPopup({ windowDimensions, theme }) {
         </PressableScale>
       )}
 
+      <Text style={[theme.fonts.labelMedium, { marginTop: 20, textAlign: 'justify' }]}>
+        Le rapport contient les dernières réponses d'ÉcoleDirecte, sans nom, identifiant, jeton ni coordonnées. Il n'est envoyé à personne : {Platform.OS === "web" ? "il est copié dans le presse-papiers" : "vous choisissez où le partager"}.
+      </Text>
       <CustomButton
-        title={sendingBugReport ? "Envoi..." : canSendBugReport ? "Envoyer" : sentBugReport ? "Envoyé !" : "Bug déjà signalé"}
-        confirmTitle={canSendBugReport ? `Êtes-vous sûr${UserData.mainAccount.getSuffix()} ?` : null}
-        confirmLabel={`Envo${UserData.mainAccount.isParent ? "yez" : "ies"}-en qu'un seul !`}
-        onPress={sendBugReport}
+        title={status === "done" ? (Platform.OS === "web" ? "Rapport copié !" : "Rapport prêt !") : status === "error" ? "Impossible de préparer le rapport" : "Préparer le rapport"}
+        onPress={shareBugReport}
         style={{
-          backgroundColor: (canSendBugReport || sentBugReport) ? theme.colors.primary : theme.colors.tertiary,
-          marginTop: 20,
+          backgroundColor: status === "error" ? theme.colors.tertiary : theme.colors.primary,
+          marginTop: 10,
         }}
         theme={theme}
       />

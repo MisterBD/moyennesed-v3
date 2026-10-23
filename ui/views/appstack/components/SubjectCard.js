@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import { ArrowRightIcon } from 'lucide-react-native';
-import { PressableScale } from 'react-native-pressable-scale';
+import { PressableScale } from '../../global_components/PressableScale';
 
 import { BottomSheet } from '../../global_components/BottomSheet';
 import { AnimatedComponent } from '../../global_components/AnimatedComponents';

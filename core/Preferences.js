@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Storage } from "../utils/Storage";
 import { Logger } from "../utils/Logger";
 
 
@@ -32,7 +32,7 @@ export class Preferences {
 
   // Save
   static async save() {
-    await AsyncStorage.setItem("coefficients-preferences", JSON.stringify({
+    await Storage.setItem("coefficients-preferences", JSON.stringify({
       allowGuessMarkCoefficients: this.allowGuessMarkCoefficients,
       allowGuessSubjectCoefficients: this.allowGuessSubjectCoefficients,
       allowCustomCoefficients: this.allowCustomCoefficients,
@@ -42,7 +42,7 @@ export class Preferences {
   }
   // Load
   static async load() {
-    await AsyncStorage.getItem("coefficients-preferences").then(jsonValue => {
+    await Storage.getItem("coefficients-preferences").then(jsonValue => {
       if (jsonValue != null) {
         let preferences = JSON.parse(jsonValue);
         this.allowGuessMarkCoefficients = preferences.allowGuessMarkCoefficients;
@@ -69,6 +69,6 @@ export class Preferences {
     this.allowCustomCoefficients = true;
     this.isDarkMode = false;
     this.vibrate = true;
-    await AsyncStorage.removeItem("coefficients-preferences");
+    await Storage.removeItem("coefficients-preferences");
   }
 }

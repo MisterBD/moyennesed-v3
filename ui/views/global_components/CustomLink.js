@@ -1,5 +1,5 @@
 import { Text, Linking, Dimensions } from 'react-native';
-import { PressableScale } from 'react-native-pressable-scale';
+import { PressableScale } from './PressableScale';
 import { LinkIcon, ArrowRightIcon } from 'lucide-react-native';
 
 

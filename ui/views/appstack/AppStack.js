@@ -1,14 +1,11 @@
 import { useRef, useEffect } from 'react';
 import { ScrollView, Dimensions } from 'react-native';
 import useState from 'react-usestateref'
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RewardedAd, TestIds, AdEventType, RewardedAdEventType } from 'react-native-google-mobile-ads';
 
 import { MainPage } from './MainPage';
 import { ProfilePage } from './ProfilePage';
 import { UserData } from '../../../core/UserData';
 import { useAppContext } from '../../../utils/AppContext';
-import AdsHandler from '../../../utils/AdsHandler';
 import { Logger } from '../../../utils/Logger';
 
 
@@ -66,60 +63,6 @@ function AppStack({ setIsDarkMode, isDoubleAuthPopupOpen, openDoubleAuthPopup, t
   const [_updateScreen, setUpdateScreen, updateScreenRef] = useState(false);
   function updateScreen() { setUpdateScreen(!updateScreenRef.current); }
 
-  // AD STUFF //
-  const AD_COOLDOWN = 12 * 60 * 60 * 1000;
-  const [_currentAd, setCurrentAd, currentAdRef] = useState(null);
-  const [_canShowContent, setCanShowContent, canShowContentRef] = useState(false);
-  const [_triedToShowAd, setTriedToShowAd, triedToShowAdRef] = useState(false);
-  const [_earnedReward, setEarnedReward, earnedRewardRef] = useState(false);
-  function getAdUnitID() { return __DEV__ ? TestIds.REWARDED : Platform.select({
-    ios: process.env.EXPO_PUBLIC_IOS_REWARDED_AD_UNIT_ID,
-    android: process.env.EXPO_PUBLIC_ANDROID_REWARDED_AD_UNIT_ID,
-  })}
-  function getNewAd() { return RewardedAd.createForAdRequest(getAdUnitID(), {
-    keywords: ['élève', 'lycéen', 'collège', 'lycée', 'école', 'éducation'],
-    requestNonPersonalizedAdsOnly: !AdsHandler.servePersonalizedAds,
-  });}
-  function addAdListeners() {
-    currentAdRef.current.addAdEventsListener(event => {
-      if (event.type === AdEventType.LOADED) {
-        if (triedToShowAdRef.current) { currentAdRef.current.show(); }
-      } else if (event.type === RewardedAdEventType.EARNED_REWARD || event.type === AdEventType.ERROR) {
-        Logger.info("Reward granted");
-        setEarnedReward(event.type === RewardedAdEventType.EARNED_REWARD);
-        setCanShowContent(true);
-        AsyncStorage.setItem("canShowAverage", JSON.stringify({ lastAdShowedDate: Date.now() }));
-      } else if (event.type === AdEventType.CLOSED && !earnedRewardRef.current) {
-        Logger.info("Reward not granted");
-        setCurrentAd(null);
-      }
-    });
-  }
-  useEffect(() => { if (!currentAdRef.current) {
-    if (!AdsHandler.canServeAds) { setCanShowContent(true); return; }
-    
-    AsyncStorage.getItem("canShowAverage").then(value => {
-      const data = JSON.parse(value);
-      if (data) {
-        const lastAdShowedDate = new Date(data?.lastAdShowedDate ?? 0);
-        if (Date.now() - lastAdShowedDate <= AD_COOLDOWN) {
-          setCanShowContent(true);
-          return;
-        }
-      } else {
-        setCanShowContent(true);
-        AsyncStorage.setItem("canShowAverage", JSON.stringify({
-          lastAdShowedDate: Date.now(),
-        }));
-        return;
-      }
-
-      setCurrentAd(getNewAd());
-      addAdListeners();
-      currentAdRef.current.load();
-    });
-  }}, [currentAdRef.current]);
-
   return (
     <ScrollView
       horizontal={true}
@@ -139,11 +82,6 @@ function AppStack({ setIsDarkMode, isDoubleAuthPopupOpen, openDoubleAuthPopup, t
         profilePhotoRef={profilePhotoRef}
         scrollViewRef={scrollViewRef}
         updateScreen={updateScreen}
-        adStuff={{
-          currentAd: currentAdRef.current,
-          canShowContent: canShowContentRef.current,
-          setTriedToShowAd: setTriedToShowAd,
-        }}
         theme={theme}
       />
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
-import { PressableScale } from 'react-native-pressable-scale';
+import { PressableScale } from '../../global_components/PressableScale';
 import { HapticsHandler } from '../../../../utils/HapticsHandler';
 
 import * as Haptics from "expo-haptics";
