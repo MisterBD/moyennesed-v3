@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { BrainCircuitIcon, ChevronDownIcon, ChevronRightIcon, ChevronUpIcon, GraduationCapIcon, MinusIcon, PlusIcon, Trash2Icon, WrenchIcon, XIcon, Users2Icon, TrendingUpIcon } from 'lucide-react-native';
-import { PressableScale } from 'react-native-pressable-scale';
+import { PressableScale } from '../../global_components/PressableScale';
 import { LineChart } from 'react-native-chart-kit';
 import useState from 'react-usestateref';
 import * as Haptics from "expo-haptics";

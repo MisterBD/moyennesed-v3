@@ -34,12 +34,23 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# firebase
-utils/firebaseUtils.js
+# fichiers locaux (jamais publiés)
+.env
+.env.*
+!.env.example
 private
 
-# admob
-.env
+# dossiers natifs générés par « npx expo prebuild » (non suivis : Continuous Native Generation)
+/android
+/ios
+
+# Vercel
+.vercel
+
+# vérification locale (npm run verifier)
+dist-verification/
+dist-test/
+dist-test-captures/
 
 # builds
 builds/
