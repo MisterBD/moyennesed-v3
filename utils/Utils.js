@@ -1,4 +1,3 @@
-var Buffer = require('buffer/').Buffer;
 import { htmlToText } from "html-to-text";
 
 // Core
@@ -77,11 +76,19 @@ function capitalizeWords(string) {
     return words.join(" ");
 }
 
+// Texte reçu d'ÉcoleDirecte en base64 (UTF-8) -> texte lisible sans balises HTML
+function base64ToUtf8(data) {
+    const binary = atob(data);
+    let percentEncoded = "";
+    for (let i = 0; i < binary.length; i++) {
+        percentEncoded += "%" + binary.charCodeAt(i).toString(16).padStart(2, "0");
+    }
+    try { return decodeURIComponent(percentEncoded); } catch (e) { return binary; }
+}
+
 function parseHtmlData(data) {
     if (!data) { return ""; }
-    let binaryData = Buffer.from(data, 'base64').toString('binary');
-    let utf8Data = decodeURIComponent(escape(binaryData));
-    return htmlToText(utf8Data);
+    return htmlToText(base64ToUtf8(data));
 }
 
 function encodeStringValueToUTF8(str) {

@@ -1,102 +1,63 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, Text, View } from "react-native";
 import { DefaultTheme } from "react-native-paper";
 import { CheckCircleIcon, CircleIcon } from "lucide-react-native";
-import { PressableScale } from "react-native-pressable-scale";
+import { PressableScale } from '../../global_components/PressableScale';
 import { ScrollView } from "react-native-gesture-handler";
 
 import { CustomButton } from "../../global_components/CustomButton";
 import { UserData } from "../../../../core/UserData";
+import * as EcoleDirecteAPI from "../../../../core/EcoleDirecteAPI";
 import { parseHtmlData } from "../../../../utils/Utils";
 import { Logger } from "../../../../utils/Logger";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 // Double auth popup
 function DoubleAuthPopup({ closePopup }) {
   const [isLoading, setIsLoading] = useState(true);
   const [wrongChoice, setWrongChoice] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [content, setContent] = useState(null);
   const [choices, setChoices] = useState([]);
   const [rawchoices, setRawChoices] = useState([]);
   async function getContent() {
-    var response = await axios.post(
-      'https://api.ecoledirecte.com/v3/connexion/doubleauth.awp?verbe=get&v=4',
-      'data={}',
-      { headers: { "X-Token": UserData.token } },
-    ).catch(error => {
-      Logger.login(`An error occured while logging in : ${error}`, true);
-    });
-    
-    switch (response.status) {
-      case 200:
-        Logger.login("API request successful");
-        switch (response.data.code) {
-          case 200:
-            Logger.login("Got double auth content !");
-            setContent(parseHtmlData(response.data.data.question))
-            var tempPropositions = [];
-            response.data.data.propositions.forEach(proposition => {
-              tempPropositions.push(parseHtmlData(proposition));
-            });
-            setChoices(tempPropositions);
-            setRawChoices(response.data.data.propositions);
-            setIsLoading(false);
-            break;
-          default:
-            Logger.login(`API responded with unknown code ${response.data.code}`, true);
-            break;
-        }
-        break;
-      default:
-        Logger.login("API request failed", true);
-        break;
+    const response = await EcoleDirecteAPI.getDoubleAuthQuestion();
+    if (response.httpStatus === 200 && response.json?.code === 200) {
+      Logger.login("Question de double authentification reçue");
+      setContent(parseHtmlData(response.json.data.question));
+      setChoices(response.json.data.propositions.map(proposition => parseHtmlData(proposition)));
+      setRawChoices(response.json.data.propositions);
+      setIsLoading(false);
+    } else {
+      Logger.login(`Question de double authentification indisponible (code ${response.json?.code ?? response.httpStatus})`, true);
+      setErrorMessage("Impossible de récupérer la question de sécurité d'ÉcoleDirecte. Réessayez plus tard.");
     }
   }
   useEffect(() => { getContent(); }, []);
 
   const [selectedChoice, setSelectedChoice] = useState(0);
   async function confirmChoice() {
-    if (wrongChoice) { return; }
-    
-    var response = await axios.post(
-      'https://api.ecoledirecte.com/v3/connexion/doubleauth.awp?verbe=post&v=4',
-      `data=${JSON.stringify({
-        "choix": rawchoices[selectedChoice],
-      })}`,
-      { headers: { "X-Token": UserData.token } },
-    ).catch(error => {
-      Logger.login(`An error occured while logging in : ${error}`, true);
-    });
+    if (wrongChoice || isLoading) { return; }
 
-    switch (response.status) {
-      case 200:
-        Logger.login("API request successful");
-        switch (response.data.code) {
-          case 200:
-            Logger.login("Got double auth content !");
-            const { cn, cv } = response.data.data;
-            await AsyncStorage.setItem("loginIDs", JSON.stringify({
-              cn,
-              cv,
-            }));
-            const successful = await UserData.refreshLogin();
-            if (successful) {
-              Logger.login("Verification successful !");
-              closePopup();
-            }
-            break;
-          default:
-            Logger.login('Wrong choice for confirmation, account blocked !');
-            setWrongChoice(true);
-            break;
-        }
-        break;
-      default:
-        Logger.login("API request failed", true);
-        break;
+    const response = await EcoleDirecteAPI.postDoubleAuthAnswer(rawchoices[selectedChoice]);
+    if (response.httpStatus === 200 && response.json?.code === 200) {
+      Logger.login("Double authentification réussie");
+      // Codes de confiance : rangés dans le stockage sécurisé, ils évitent la question la prochaine fois
+      const { cn, cv } = response.json.data;
+      await UserData.saveTrustedDevice(cn, cv);
+      const successful = await UserData.refreshLogin();
+      if (successful === 1) {
+        closePopup();
+      } else {
+        setErrorMessage("Réponse acceptée, mais la reconnexion a échoué. Fermez puis rouvrez l'appli.");
+      }
+    } else if (response.httpStatus === 200) {
+      Logger.login("Mauvaise réponse à la double authentification", true);
+      setWrongChoice(true);
+    } else {
+      Logger.login(`Échec de l'envoi de la réponse (HTTP ${response.httpStatus})`, true);
+      setErrorMessage("ÉcoleDirecte ne répond pas. Vérifiez la connexion et réessayez.");
     }
   }
   
@@ -112,6 +73,11 @@ function DoubleAuthPopup({ closePopup }) {
             color: 'red',
             textAlign: 'center',
           }]}>Mauvaise réponse, votre compte a été suspendu, un mail de récupération a été envoyé.</Text>
+        ) : errorMessage ? (
+          <Text style={[DefaultTheme.fonts.bodyMedium, {
+            color: 'red',
+            textAlign: 'center',
+          }]}>{errorMessage}</Text>
         ) : content && choices.length != 0 ? (
           <>
             <Text style={[DefaultTheme.fonts.bodyMedium, {

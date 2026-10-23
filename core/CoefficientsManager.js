@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Storage } from "../utils/Storage";
 
 
 export class CoefficientManager {
@@ -128,12 +128,12 @@ export class CoefficientManager {
     this.defaultEDSubjectCoefficients.clear();
     this.customMarkCoefficients.clear();
     this.customSubjectCoefficients.clear();
-    await AsyncStorage.removeItem("coefficients");
+    await Storage.removeItem("coefficients");
   }
 
   // Save
   static async save() {
-    await AsyncStorage.setItem("coefficients", JSON.stringify({
+    await Storage.setItem("coefficients", JSON.stringify({
       guessedMarkCoefficients: Array.from(this.guessedMarkCoefficients.entries()),
       guessedSubjectCoefficients: Array.from(this.guessedSubjectCoefficients.entries()),
       defaultEDMarkCoefficients: Array.from(this.defaultEDMarkCoefficients.entries()),
@@ -144,7 +144,7 @@ export class CoefficientManager {
   }
   // Load
   static async load() {
-    AsyncStorage.getItem("coefficients").then((jsonData) => {
+    Storage.getItem("coefficients").then((jsonData) => {
       if (jsonData != null) {
         let coefficients = JSON.parse(jsonData);
         this.guessedMarkCoefficients = new Map(coefficients.guessedMarkCoefficients);

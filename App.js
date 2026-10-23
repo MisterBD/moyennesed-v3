@@ -1,9 +1,8 @@
 import { useEffect } from "react";
 import useState from "react-usestateref";
-import { StatusBar } from "react-native";
+import { StatusBar, Platform } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { useTheme } from "react-native-paper";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
@@ -17,7 +16,7 @@ import { Preferences } from "./core/Preferences";
 import { CoefficientManager } from "./core/CoefficientsManager";
 import { AppContextProvider } from "./utils/AppContext";
 import { Logger } from "./utils/Logger";
-import AdsHandler from "./utils/AdsHandler";
+import { Storage, migrateLegacyPlainCredentials } from "./utils/Storage";
 
 
 // Keep SplashScreen on while app is loading
@@ -39,20 +38,16 @@ function App() {
   // Main initialize function
   useEffect(() => { initialize(); }, []);
   async function initialize() {
-    try { // Setup admob
-      await AdsHandler.setupAdmob({ checkForConsent: true });
-    } catch (e) {
-      Logger.load("Could not start Admob, app is probably offline", true);
-      Logger.load(e, true);
-    }
     try {
       // Load fonts
       await useFonts();
 
-      // Load credentials file to detect already logged-in account
-      const jsonCredentials = await AsyncStorage.getItem("credentials");
-      if (jsonCredentials) {
-        Logger.load("Detected logged-in account, loading cache...");
+      // Ancienne version : identifiants en clair -> déplacés dans le stockage sécurisé
+      await migrateLegacyPlainCredentials();
+
+      // Identifiants enregistrés (stockage sécurisé) = compte déjà connecté
+      if (await UserData.hasSavedCredentials()) {
+        Logger.load("Compte déjà connecté, chargement du cache...");
 
         // Load all local files
         await Preferences.load();
@@ -62,12 +57,14 @@ function App() {
 
         setIsAppLoaded(true);
       } else {
-        Logger.load("No account detected, showing AuthStack");
+        Logger.load("Aucun compte connecté");
+        // Web : le mot de passe n'est gardé qu'en mémoire, il disparaît au rechargement de la page.
+        // On repart alors de zéro pour ne pas garder de notes d'une session précédente.
+        if (Platform.OS === "web") { await Storage.clear(); }
         setIsAppLoaded(true);
       }
     } catch (e) {
-      Logger.load("An error occured on startup", true);
-      Logger.load(e, true);
+      Logger.load(`Erreur au démarrage : ${e?.message ?? "inconnue"}`, true);
       setIsAppLoaded(true);
     }
   }
