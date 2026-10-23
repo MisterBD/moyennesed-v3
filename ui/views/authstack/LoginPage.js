@@ -50,7 +50,7 @@ function LoginPage({ isConnecting, setIsConnecting, setLoggedIn, openDoubleAuthP
       <Text style={[
         theme.fonts.labelLarge,
         { marginBottom: 30 }
-      ]}>MoyennesED fonctionne avec vos identifiants ÉcoleDirecte</Text>
+      ]}>L'appli fonctionne avec vos propres identifiants ÉcoleDirecte</Text>
       
       {/* Login input */}
       <CustomTextInput

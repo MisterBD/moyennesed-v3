@@ -33,15 +33,15 @@ function FeaturesPage({ pageStyle, windowDimensions, theme }) {
           windowDimensions={windowDimensions}
         />
         <InfoCard
-          title="🔒 Plus sécurisée que jamais"
-          description="Aucune de vos données ne nous est envoyée, tout reste sur votre appareil."
+          title="🔒 Vos identifiants restent chez vous"
+          description="Ils ne sont envoyés qu'à ÉcoleDirecte (sur le web, via votre propre relais Vercel). Sur téléphone, le mot de passe est rangé dans le coffre sécurisé de l'appareil."
           theme={theme}
           style={{ marginBottom: 20 }}
           windowDimensions={windowDimensions}
         />
         <InfoCard
-          title="👨‍💻 Un support actif"
-          description="Vous rencontrez un problème ? Envoyez un mail ou signalez un bug directement depuis l'application."
+          title="🛠️ Une version à vous"
+          description="Appli non officielle, à modifier librement pour un usage personnel, par exemple avec Claude."
           theme={theme}
           windowDimensions={windowDimensions}
         />
