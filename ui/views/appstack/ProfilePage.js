@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, SafeAreaView, ScrollView, Text, Image, Switch, ActivityIndicator, Dimensions, Platform, StatusBar, useWindowDimensions } from 'react-native';
-import { BrainCircuitIcon, BugIcon, CheckIcon, ChevronLeftIcon, MailIcon, MessageSquareDashedIcon, MoonIcon, RefreshCcwIcon, SunIcon, UserIcon, WrenchIcon, XIcon } from 'lucide-react-native';
-import { PressableScale } from 'react-native-pressable-scale';
+import { BrainCircuitIcon, BugIcon, CheckIcon, ChevronLeftIcon, MoonIcon, RefreshCcwIcon, SunIcon, UserIcon, WrenchIcon, XIcon } from 'lucide-react-native';
+import { PressableScale } from '../global_components/PressableScale';
 import * as Haptics from "expo-haptics";
 
 import { CustomButton } from '../global_components/CustomButton';
@@ -15,8 +15,7 @@ import { UserData } from '../../../core/UserData';
 import { Preferences } from '../../../core/Preferences';
 import { CoefficientManager } from '../../../core/CoefficientsManager';
 import { HapticsHandler } from '../../../utils/HapticsHandler';
-import AdsHandler from '../../../utils/AdsHandler';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LIEN_DEPOT_ORIGINAL, LIEN_DEPOT_FORK, LIEN_LICENCE } from '../../../config';
 
 
 function ProfilePage({
@@ -65,7 +64,7 @@ function ProfilePage({
       isOpen={bugReportPopupOpen}
       onClose={() => setBugReportPopupOpen(false)}
       snapPoints={[
-        Math.min(550 / Dimensions.get('screen').height * windowDimensions.fontScale, 1) * 100 + "%",
+        Math.min(650 / Dimensions.get('screen').height * windowDimensions.fontScale, 1) * 100 + "%",
       ]}
       children={<BugReportPopup windowDimensions={windowDimensions} theme={theme}/>}
       theme={theme}
@@ -252,7 +251,7 @@ function ProfilePage({
           paddingHorizontal: 20,
           paddingVertical: 15,
         }}>
-          <Text style={[theme.fonts.labelLarge, { textAlign: 'justify' }]}>{UserData.mainAccount.isParent ? "Vous n'avez" : "Tu n'as"} pas les coefs ? L'IA de MoyennesED est là pour les deviner !</Text>
+          <Text style={[theme.fonts.labelLarge, { textAlign: 'justify' }]}>{UserData.mainAccount.isParent ? "Vous n'avez" : "Tu n'as"} pas les coefs ? L'appli est là pour les deviner !</Text>
           <Text style={[theme.fonts.labelLarge, { textAlign: 'justify', marginBottom: 10 }]}>Une icône <BrainCircuitIcon size={20 * windowDimensions.fontScale} color={theme.colors.onSurfaceDisabled} style={{ transform: [{ rotate: '90deg' }] }}/> apparaîtra auprès des coefficients estimés.</Text>
 
           <View style={{
@@ -340,9 +339,7 @@ function ProfilePage({
           paddingHorizontal: 20,
           paddingVertical: 15,
         }}>
-          <CustomLink title="Signaler un bug" onPress={() => setBugReportPopupOpen(true)} icon={<BugIcon size={20 * windowDimensions.fontScale} color={theme.colors.onSurfaceDisabled}/>} windowDimensions={windowDimensions} theme={theme}/>
-          <Text style={[theme.fonts.labelLarge, { alignSelf: 'center' }]}>ou</Text>
-          <CustomLink title="Envoyer un mail" link='mailto:moyennesed@gmail.com' icon={<MailIcon size={20 * windowDimensions.fontScale} color={theme.colors.onSurfaceDisabled}/>} windowDimensions={windowDimensions} theme={theme}/>
+          <CustomLink title="Rapport de diagnostic" onPress={() => setBugReportPopupOpen(true)} icon={<BugIcon size={20 * windowDimensions.fontScale} color={theme.colors.onSurfaceDisabled}/>} windowDimensions={windowDimensions} theme={theme}/>
         </View>
 
         {/* Informations */}
@@ -354,14 +351,16 @@ function ProfilePage({
           paddingHorizontal: 20,
           paddingVertical: 15,
         }}>
-          <Text style={[theme.fonts.labelLarge, { textAlign: 'justify', marginBottom: 10 }]}>MoyennesED est une application non-officielle, elle ne peut être tenue responsable de problèmes potentiels liés à son utilisation.</Text>
+          <Text style={[theme.fonts.labelLarge, { textAlign: 'justify', marginBottom: 10 }]}>Application non officielle, sans lien avec ÉcoleDirecte ni Aplim. Elle utilise une API non publique qui peut changer ou casser à tout moment. À utiliser uniquement avec vos propres identifiants.</Text>
           <CustomLink title="Site officiel ÉcoleDirecte" link='https://www.ecoledirecte.com' style={{ marginBottom: 10 }} windowDimensions={windowDimensions} theme={theme}/>
-          <CustomLink title="Confidentialité" link='https://moyennesed.my.to/privacy-policy.html' windowDimensions={windowDimensions} theme={theme}/>
+          <CustomLink title="Avertissement et confidentialité" link={`${LIEN_DEPOT_FORK}/blob/master/AVERTISSEMENT.md`} windowDimensions={windowDimensions} theme={theme}/>
 
           <Separator theme={theme} style={{ marginTop: 10, marginBottom: 10, backgroundColor: theme.colors.background }}/>
 
-          <Text style={[theme.fonts.labelLarge, { textAlign: 'justify', marginBottom: 10 }]}>L'application {UserData.mainAccount.isParent ? "vous est" : "t'es"} utile ? Écri{UserData.mainAccount.isParent ? "vez" : "s"} un commentaire pour soutenir le développeur !</Text>
-          <CustomLink title="Écrire un commentaire" link={Platform.OS == 'ios' ? 'https://apps.apple.com/app/apple-store/id6446418445?action=write-review' : 'https://play.google.com/store/apps/details?id=me.diegof.moyennesed&showAllReviews=true'} style={{ marginBottom: 10 }} icon={<MessageSquareDashedIcon size={20 * windowDimensions.fontScale} color={theme.colors.onSurfaceDisabled}/>} windowDimensions={windowDimensions} theme={theme}/>
+          <Text style={[theme.fonts.labelLarge, { textAlign: 'justify', marginBottom: 10 }]}>Version modifiée de MoyennesED, créée par Diego Finocchiaro. Licence CC BY-NC-SA 4.0 : usage non commercial, partage dans les mêmes conditions.</Text>
+          <CustomLink title="Appli originale (Diego Finocchiaro)" link={LIEN_DEPOT_ORIGINAL} style={{ marginBottom: 10 }} windowDimensions={windowDimensions} theme={theme}/>
+          <CustomLink title="Code de cette version" link={LIEN_DEPOT_FORK} style={{ marginBottom: 10 }} windowDimensions={windowDimensions} theme={theme}/>
+          <CustomLink title="Licence CC BY-NC-SA 4.0" link={LIEN_LICENCE} style={{ marginBottom: 10 }} windowDimensions={windowDimensions} theme={theme}/>
         </View>
 
         {/* Preferences */}
@@ -403,17 +402,9 @@ function ProfilePage({
               paddingVertical: 15,
             }}>
               <CustomLink
-                title={"Open ad inspector"}
+                title={"Oublier les codes de double authentification"}
                 onPress={() => {
-                  AdsHandler.openDebugger();
-                }}
-                windowDimensions={windowDimensions}
-                theme={theme}
-              />
-              <CustomLink
-                title={"Clear login ids"}
-                onPress={() => {
-                  AsyncStorage.removeItem("loginIDs");
+                  UserData.forgetTrustedDevice();
                 }}
                 windowDimensions={windowDimensions}
                 theme={theme}

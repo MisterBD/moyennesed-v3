@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { View, ScrollView, Text, ActivityIndicator, Dimensions } from "react-native";
-import { CheckCircle2Icon, DraftingCompassIcon, HelpCircleIcon, TrendingUpIcon, Users2Icon, WifiOffIcon, RefreshCcwIcon, ChevronDownIcon, ChevronUpIcon, LockIcon } from "lucide-react-native";
-import { PressableScale } from "react-native-pressable-scale";
+import { CheckCircle2Icon, DraftingCompassIcon, HelpCircleIcon, TrendingUpIcon, Users2Icon, WifiOffIcon, RefreshCcwIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react-native";
+import { PressableScale } from '../../global_components/PressableScale';
 import { LineChart } from "react-native-chart-kit";
 import * as Haptics from 'expo-haptics';
 import useState from "react-usestateref";
@@ -13,7 +13,6 @@ import { Preferences } from "../../../../core/Preferences";
 import { CoefficientManager } from "../../../../core/CoefficientsManager";
 import { formatAverage } from "../../../../utils/Utils";
 import { HapticsHandler } from "../../../../utils/HapticsHandler";
-import AdHiddenComponent from "./AdHiddenComponent";
 
 
 function MarksOverview({
@@ -27,7 +26,6 @@ function MarksOverview({
   refresh,
   manualRefreshingRef,
   windowDimensions,
-  adStuff,
   theme
 }) {
   // Work with subject groups
@@ -53,9 +51,6 @@ function MarksOverview({
   // Show subject groups class averages
   const [showSubjectGroupClassAverage, setShowSubjectGroupClassAverage] = useState(false);
 
-  // Can show average ?
-  const { canShowContent } = adStuff;
-
   return (
     <View>
       <AnimatedComponent index={0} forceUpdate={forceUpdateRef.current} children={<View style={{
@@ -80,10 +75,8 @@ function MarksOverview({
           }}>
             {period.average ? <View style={{ flexDirection: 'row' }}>
               <PressableScale onPress={() => {
-                if (canShowContent) {
-                  setIsGraphSelected(!isGraphSelected);
-                  HapticsHandler.vibrate(Haptics.ImpactFeedbackStyle.Light);
-                }
+                setIsGraphSelected(!isGraphSelected);
+                HapticsHandler.vibrate(Haptics.ImpactFeedbackStyle.Light);
               }} style={{
                 backgroundColor: theme.colors.background,
                 borderRadius: 5,
@@ -100,7 +93,7 @@ function MarksOverview({
                   <Text style={theme.fonts.labelMedium}>Moyenne</Text>
                 </View>}
               </PressableScale>
-              {(isGraphSelected && !CoefficientManager.isAverageHistoryUpdated && !manualRefreshingRef.current) || (!canShowContent) ? <PressableScale onPress={canShowContent ? refresh : null} style={{
+              {(isGraphSelected && !CoefficientManager.isAverageHistoryUpdated && !manualRefreshingRef.current) ? <PressableScale onPress={refresh} style={{
                 backgroundColor: theme.colors.primary,
                 borderColor: theme.colors.surface,
                 borderWidth: 1,
@@ -111,7 +104,7 @@ function MarksOverview({
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                {canShowContent ? <RefreshCcwIcon size={20} color={theme.colors.onPrimary}/> : <LockIcon size={20} color={theme.colors.onPrimary}/>}
+                <RefreshCcwIcon size={20} color={theme.colors.onPrimary}/>
               </PressableScale> : null}
             </View> : <View/>}
             {loading
@@ -135,17 +128,6 @@ function MarksOverview({
                 <Text style={[theme.fonts.labelSmall, { bottom: 1 }]}>: </Text>
                 <Text style={[theme.fonts.labelSmall, { fontFamily: 'Bitter-Regular' }]}>{formatAverage(period.classAverage)}</Text>
               </View>
-            </View>
-            <View style={{
-              top: -100,
-              marginBottom: canShowContent ? 0 : -100,
-            }}>
-              <AdHiddenComponent
-                adStuff={adStuff}
-                width={200}
-                height={100}
-                theme={theme}
-              />
             </View>
           </View> : <View style={{
             height: 100,
